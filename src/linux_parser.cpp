@@ -35,15 +35,15 @@ string LinuxParser::OperatingSystem() {
 
 // DONE: An example of how to read data from the filesystem
 string LinuxParser::Kernel() {
-  string os, kernel;
+  string os, version, kernel;
   string line;
   std::ifstream stream(kProcDirectory + kVersionFilename);
   if (stream.is_open()) {
     std::getline(stream, line);
     std::istringstream linestream(line);
-    linestream >> os >> kernel;
+    linestream >> os >> version >> kernel;
   }
-  return kernel;
+  return version + " " + kernel;
 }
 
 // BONUS: Update this to use std::filesystem
@@ -115,7 +115,7 @@ long LinuxParser::ActiveJiffies(int pid) {
   long int cutime{std::stol(stat_list[15])};
   long int cstime{std::stol(stat_list[16])};
   total_clk = (utime + stime + cutime + cstime);
-  return total_clk;}
+  return total_clk / sysconf(_SC_CLK_TCK) ;}
 
 // TODO: Read and return CPU utilization
 vector<long> LinuxParser::CpuUtilization() { 
@@ -247,28 +247,25 @@ string LinuxParser::User(int pid) {
   return string();
 }
 
-
 long LinuxParser::UpTime(int pid) { 
-  long upTimeInClockTicks = 0;
-
-  std::stringstream path;
-  path << kProcDirectory << pid << kStatFilename;
-    
-  std::ifstream filestream(path.str());
-  if (filestream.is_open()) {
-
-    const int position = 22;
-    std::string value;
-    for (int i = 0; i < position; i++) {
-      if (!(filestream >> value)) {
-        return 10000;
-      }
+  string value, line;
+  long int starttime, uptime;
+  vector<string> stat_list;
+  std::ifstream stream(kProcDirectory + std::to_string(pid) + kStatFilename);
+  if (stream.is_open()) {
+    std::getline(stream, line);
+    std::istringstream linestream(line);
+    while (linestream >> value) {
+			stat_list.push_back(value);
+        }
     }
-    upTimeInClockTicks = std::stol(value);
-  }
-  
-  return upTimeInClockTicks/sysconf(_SC_CLK_TCK);
+  starttime = std::stol(stat_list[21])/sysconf(_SC_CLK_TCK);
+  uptime =  LinuxParser::UpTime() - starttime;
+  return uptime;
 }
+
+  
+
 float LinuxParser::CpuUtilization(int pid) {
  const int systemUpTimeSeconds = LinuxParser::UpTime();
     const int totalTimeActiveSeconds = LinuxParser::ActiveJiffies(pid);
