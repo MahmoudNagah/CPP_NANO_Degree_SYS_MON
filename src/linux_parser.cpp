@@ -294,7 +294,7 @@ long LinuxParser::UpTime(int pid) {
   return uptime;
 }
 float LinuxParser::CpuUtilization(int pid) {
- const int systemUpTimeSeconds = LinuxParser::UpTime();
+ 
     const int totalTimeActiveSeconds = LinuxParser::ActiveJiffies(pid);
     const int processUpTimeSeconds = LinuxParser::UpTime(pid);
     
