@@ -298,7 +298,7 @@ float LinuxParser::CpuUtilization(int pid) {
     const int totalTimeActiveSeconds = LinuxParser::ActiveJiffies(pid);
     const int processUpTimeSeconds = LinuxParser::UpTime(pid);
     
-    const int totalTimeSiceStartUp = systemUpTimeSeconds - processUpTimeSeconds;
+    const int totalTimeSiceStartUp =   processUpTimeSeconds;
 
    float  _cpuUtilization = (1.0*totalTimeActiveSeconds)/totalTimeSiceStartUp;
     return (_cpuUtilization);
